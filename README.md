@@ -94,7 +94,4 @@ All routes are under `app/api/*`.
 - Duplicate-key issues in large mapping objects are avoided by constructing mappings via multiple `Object.assign` calls.
 - If Geoapify returns no features, try a more specific place or include state (e.g., "Kumbakonam, Tamil Nadu").
 
-## License
-
-MIT
 
