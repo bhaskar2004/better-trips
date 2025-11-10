@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+# BetterTrips
+
+A Next.js app that helps you discover nearby tourist places in India. It geocodes a user-provided location and returns prioritized points of interest using the Geoapify APIs.
+
+## Features
+
+- **Location search** with smart normalization and variations for Indian places
+- **Tourist places API** with category-aware scoring and famous-place boosting
+- **Caching** for faster repeated queries (in-memory, short TTL)
+- **TypeScript**, **App Router**, modern UI components
+
+## Tech Stack
+
+- Next.js 15
+- TypeScript
+- Geoapify Geocoding and Places APIs
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ and npm
+- A Geoapify API key: https://www.geoapify.com/
+
+### Installation
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file in the project root and add:
+
+```bash
+GEOAPIFY_API_KEY=your_api_key_here
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# App: http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Start (Production)
 
-## Learn More
+```bash
+npm start
+# App: http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All routes are under `app/api/*`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `POST /api/tourist-places`
+  - Body: `{ "placeName": "<location>" }`
+  - Returns: `{ success, location: { lat, lon, name }, places: [...] }`
+  - Notes: Accepts many common aliases and variations for Indian cities/regions.
 
-## Deploy on Vercel
+- `GET /api/tourist-places?place=<location>`
+  - Same as POST, convenient for quick testing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `GET /api/autocomplete`
+  - Lightweight endpoint for place suggestions (implementation in `app/api/autocomplete/route.ts`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/nearby`
+  - Nearby POIs given a location (implementation in `app/api/nearby/route.ts`).
+
+### Prioritization
+
+- Famous places per-location receive higher priority.
+- Category boosts (e.g., `tourism.attraction`, `tourism.sights`, `natural`, `heritage`).
+
+### Caching
+
+- In-memory Map with a short TTL (currently 120 seconds) to reduce API calls.
+
+## Deployment
+
+- Ensure `GEOAPIFY_API_KEY` is set in your hosting provider’s environment.
+- Run `npm run build` during CI, then `npm start` in a Node runtime.
+
+## Troubleshooting
+
+- Duplicate-key issues in large mapping objects are avoided by constructing mappings via multiple `Object.assign` calls.
+- If Geoapify returns no features, try a more specific place or include state (e.g., "Kumbakonam, Tamil Nadu").
+
+## License
+
+MIT
+
